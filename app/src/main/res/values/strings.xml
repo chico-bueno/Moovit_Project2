@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Moovit</string>
+    <string name="title_activity_tela_inicial">TelaInicial</string>
+    <string name="title_activity_direcoes">Direcoes</string>
+    <string name="title_activity_horarios">Horarios</string>
+    <string name="title_activity_estacoes">Estacoes</string>
+    <string name="title_activity_navigation">Navigation</string>
+    <string name="title_activity_moovit_dao">MoovitDAO</string>
+    <string name="title_activity_linha_transporte">LinhaTransporte</string>
+    <string name="title_activity_linha_transporte_banco">LinhaTransporteBanco</string>
+    <string name="title_activity_app_database">AppDatabase</string>
+</resources>
