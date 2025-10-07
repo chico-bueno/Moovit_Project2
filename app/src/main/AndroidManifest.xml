@@ -12,6 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Moovit">
         <activity
+            android:name=".FavoritosBanco"
+            android:exported="false"
+            android:label="@string/title_activity_favoritos_banco"
+            android:theme="@style/Theme.Moovit" />
+        <activity
+            android:name=".FavoritosDAO"
+            android:exported="false"
+            android:label="@string/title_activity_favoritos_dao"
+            android:theme="@style/Theme.Moovit" />
+        <activity
             android:name=".AppDatabase"
             android:exported="false"
             android:label="@string/title_activity_app_database"

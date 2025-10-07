@@ -7,7 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 
 @Dao
-interface MoovitDAO {
+interface FavoritosDAO {
     @Insert
     suspend fun inserir(linhaTransporte: LinhaTransporteBanco)
 

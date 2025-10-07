@@ -9,4 +9,6 @@
     <string name="title_activity_linha_transporte">LinhaTransporte</string>
     <string name="title_activity_linha_transporte_banco">LinhaTransporteBanco</string>
     <string name="title_activity_app_database">AppDatabase</string>
+    <string name="title_activity_favoritos_dao">FavoritosDAO</string>
+    <string name="title_activity_favoritos_banco">FavoritosBanco</string>
 </resources>
