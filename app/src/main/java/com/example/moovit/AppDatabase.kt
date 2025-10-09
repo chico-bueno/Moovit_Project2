@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 
 import androidx.room.TypeConverters
 
-@Database(entities = [LinhaTransporteBanco::class, HorarioBanco::class], version = 1)
+@Database(entities = [LinhaTransporteBanco::class, FavoritosBanco::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun moovitDAO(): MoovitDAO
-    abstract fun horariosDao(): HorariosDAO
+    abstract fun favoritosDAO(): FavoritosDAO
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

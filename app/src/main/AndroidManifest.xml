@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Moovit">
         <activity
+            android:name=".HorariosDAO"
+            android:exported="false"
+            android:label="@string/title_activity_horarios_dao"
+            android:theme="@style/Theme.Moovit" />
+        <activity
             android:name=".FavoritosBanco"
             android:exported="false"
             android:label="@string/title_activity_favoritos_banco"
