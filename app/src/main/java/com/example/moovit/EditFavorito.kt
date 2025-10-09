@@ -12,32 +12,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EditFavorito(
+fun EditFavoritoDialog(
     linha: LinhaTransporteBanco,
-    onDismiss: () -> Unit,
-    onSave: (LinhaTransporteBanco) -> Unit
+    aoFechar: () -> Unit,
+    aoSalvar: (LinhaTransporteBanco) -> Unit
 ) {
-    var nome by remember { mutableStateOf(linha.nome) }
-    var numeroStr by remember { mutableStateOf(linha.numero.toString()) }
-    var tipo by remember { mutableStateOf(linha.tipo) }
+    var nomeLinha by remember { mutableStateOf(linha.nome) }
+    var numeroLinha by remember { mutableStateOf(linha.numero.toString()) }
+    var tipoLinha by remember { mutableStateOf(linha.tipo) }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = aoFechar,
         confirmButton = {
             TextButton(onClick = {
-                val numero = numeroStr.toIntOrNull() ?: linha.numero
-                onSave(linha.copy(nome = nome, numero = numero, tipo = tipo))
+                val numeroConvertido = numeroLinha.toIntOrNull() ?: linha.numero
+                aoSalvar(linha.copy(nome = nomeLinha, numero = numeroConvertido, tipo = tipoLinha))
             }) { Text("Salvar") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = { TextButton(onClick = aoFechar) { Text("Cancelar") } },
         title = { Text("Editar favorito") },
         text = {
             Column {
-                TextField(value = nome, onValueChange = { nome = it }, label = { Text("Nome") })
+                TextField(value = nomeLinha, onValueChange = { nomeLinha = it }, label = { Text("Nome da linha") })
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = numeroStr, onValueChange = { numeroStr = it }, label = { Text("Número") })
+                TextField(value = numeroLinha, onValueChange = { numeroLinha = it }, label = { Text("Número da linha") })
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = tipo, onValueChange = { tipo = it }, label = { Text("Tipo") })
+                TextField(value = tipoLinha, onValueChange = { tipoLinha = it }, label = { Text("Tipo de transporte") })
             }
         }
     )

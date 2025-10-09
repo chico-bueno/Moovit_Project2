@@ -8,56 +8,55 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class FavoritosViewModel(application: Application) : AndroidViewModel(application) {
-    private val db = AppDatabase.getDatabase(application)
-    private val dao = db.moovitDAO()
+    private val banco = AppDatabase.getDatabase(application)
+    private val daoFavoritos = banco.moovitDAO()
 
-    private val _favoritos = MutableStateFlow<List<LinhaTransporteBanco>>(emptyList())
-    val favoritos: StateFlow<List<LinhaTransporteBanco>> = _favoritos
+    private val _listaFavoritos = MutableStateFlow<List<LinhaTransporteBanco>>(emptyList())
+    val listaFavoritos: StateFlow<List<LinhaTransporteBanco>> = _listaFavoritos
 
     init {
-        buscarTodos()
-        // Se não houver favoritos, inserir alguns padrões para a primeira experiência
+        carregarFavoritos()
         viewModelScope.launch {
-            val atuais = dao.buscarTodos()
-            if (atuais.isEmpty()) {
-                val padroes = listOf(
+            val favoritosAtuais = daoFavoritos.buscarTodos()
+            if (favoritosAtuais.isEmpty()) {
+                val exemplos = listOf(
                     LinhaTransporteBanco(nome = "561 GUILHERMINA", numero = 561, tipo = "Ônibus", cor = "#FF5722"),
                     LinhaTransporteBanco(nome = "665 VILA REX", numero = 665, tipo = "Ônibus", cor = "#FF5722"),
                     LinhaTransporteBanco(nome = "360 NOVENA", numero = 360, tipo = "Ônibus", cor = "#FF5722")
                 )
-                padroes.forEach { dao.inserir(it) }
-                buscarTodos()
+                exemplos.forEach { daoFavoritos.inserir(it) }
+                carregarFavoritos()
             }
         }
     }
 
-    fun buscarTodos() {
+    fun carregarFavoritos() {
         viewModelScope.launch {
-            _favoritos.value = dao.buscarTodos()
+            _listaFavoritos.value = daoFavoritos.buscarTodos()
         }
     }
 
-    fun inserir(linha: LinhaTransporteBanco, onComplete: (() -> Unit)? = null) {
+    fun adicionarFavorito(linha: LinhaTransporteBanco, aoFinalizar: (() -> Unit)? = null) {
         viewModelScope.launch {
-            dao.inserir(linha)
-            buscarTodos()
-            onComplete?.invoke()
+            daoFavoritos.inserir(linha)
+            carregarFavoritos()
+            aoFinalizar?.invoke()
         }
     }
 
-    fun atualizar(linha: LinhaTransporteBanco, onComplete: (() -> Unit)? = null) {
+    fun editarFavorito(linha: LinhaTransporteBanco, aoFinalizar: (() -> Unit)? = null) {
         viewModelScope.launch {
-            dao.atualizar(linha)
-            buscarTodos()
-            onComplete?.invoke()
+            daoFavoritos.atualizar(linha)
+            carregarFavoritos()
+            aoFinalizar?.invoke()
         }
     }
 
-    fun deletar(linha: LinhaTransporteBanco, onComplete: (() -> Unit)? = null) {
+    fun removerFavorito(linha: LinhaTransporteBanco, aoFinalizar: (() -> Unit)? = null) {
         viewModelScope.launch {
-            dao.deletar(linha)
-            buscarTodos()
-            onComplete?.invoke()
+            daoFavoritos.deletar(linha)
+            carregarFavoritos()
+            aoFinalizar?.invoke()
         }
     }
 }

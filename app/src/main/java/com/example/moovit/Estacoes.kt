@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -38,18 +39,18 @@ class Estacoes : ComponentActivity() {
 }
 
 data class LinhaOnibus(
-    val numero: String,
-    val nome: String,
+    val numeroLinha: String,
+    val nomeLinha: String,
     val tempoChegada: String,
     val proximoHorario: String,
-    val cor: Color = Color(0xFFFF5722)
+    val corLinha: Color = Color(0xFFFF5722)
 )
 
 data class EstacaoCompleta(
-    val nome: String,
-    val distancia: String,
+    val nomeEstacao: String,
+    val distanciaEstacao: String,
     val tempoAPe: String,
-    val linhas: List<LinhaOnibus>
+    val linhasEstacao: List<LinhaOnibus>
 )
 @Composable
 fun TelaEstacoes(navController: NavHostController) {
@@ -78,11 +79,11 @@ fun TelaEstacoes(navController: NavHostController) {
 
     var textoPesquisa by remember { mutableStateOf("") }
     val estacoesFiltradas = estacoes.filter {
-        it.nome.contains(textoPesquisa, ignoreCase = true)
+        it.nomeEstacao.contains(textoPesquisa, ignoreCase = true)
     }
 
     val favoritosViewModel: FavoritosViewModel = viewModel()
-    val favoritosState by favoritosViewModel.favoritos.collectAsState()
+    val favoritosState by favoritosViewModel.listaFavoritos.collectAsState()
 
     var mostrarFavoritas by remember { mutableStateOf(false) }
     var editarLinha by remember { mutableStateOf<LinhaTransporteBanco?>(null) }
@@ -114,7 +115,7 @@ fun TelaEstacoes(navController: NavHostController) {
                             IconButton(onClick = { editarLinha = linha; mostrarDialogEditar = true }) {
                                 Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar", tint = Color(0xFFFF9500))
                             }
-                            IconButton(onClick = { favoritosViewModel.deletar(linha) }) {
+                            IconButton(onClick = { favoritosViewModel.removerFavorito(linha) }) {
                                 Icon(imageVector = Icons.Default.Delete, contentDescription = "Deletar", tint = Color.Red)
                             }
                         }
@@ -130,11 +131,9 @@ fun TelaEstacoes(navController: NavHostController) {
             ) {
                 items(estacoesFiltradas) { estacao ->
                     CardEstacaoMoovit(estacao, onFavoritar = { linha ->
-                        // converte LinhaOnibus em LinhaTransporteBanco e insere, evitando duplicatas
-                        val nova = LinhaTransporteBanco(nome = "${linha.numero} ${linha.nome}", numero = linha.numero.toIntOrNull() ?: 0, tipo = "Ônibus", cor = "#FF5722")
-                        // checar duplicatas pelo número
+                        val nova = LinhaTransporteBanco(nome = "${linha.numeroLinha} ${linha.nomeLinha}", numero = linha.numeroLinha.toIntOrNull() ?: 0, tipo = "Ônibus", cor = "#FF5722")
                         val existe = favoritosState.any { it.numero == nova.numero }
-                        if (!existe) favoritosViewModel.inserir(nova)
+                        if (!existe) favoritosViewModel.adicionarFavorito(nova)
                     })
                 }
             }
@@ -142,8 +141,8 @@ fun TelaEstacoes(navController: NavHostController) {
     }
 
     if (mostrarDialogEditar && editarLinha != null) {
-        EditFavorito(linha = editarLinha!!, onDismiss = { mostrarDialogEditar = false; editarLinha = null }) { atualizado ->
-            favoritosViewModel.atualizar(atualizado)
+        EditFavoritoDialog(linha = editarLinha!!, aoFechar = { mostrarDialogEditar = false; editarLinha = null }) { atualizado ->
+            favoritosViewModel.editarFavorito(atualizado)
             mostrarDialogEditar = false
             editarLinha = null
         }
@@ -151,7 +150,7 @@ fun TelaEstacoes(navController: NavHostController) {
 }
 
 @Composable
-fun HeaderEstacoes(textoPesquisa: String, onTextoMudou: (String) -> Unit) {
+fun HeaderEstacoes(textoPesquisa: String, onMudarTexto: (String) -> Unit) {
     Surface(color = Color(0xFF2D2D2D), modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -169,7 +168,7 @@ fun HeaderEstacoes(textoPesquisa: String, onTextoMudou: (String) -> Unit) {
                 Box(modifier = Modifier.padding(12.dp)) {
                     BasicTextField(
                         value = textoPesquisa,
-                        onValueChange = onTextoMudou,
+                        onValueChange = onMudarTexto,
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp),
                         modifier = Modifier.fillMaxWidth(),
@@ -213,6 +212,38 @@ fun AbasEstacoes(onFavoritasClick: () -> Unit) {
 }
 
 @Composable
+fun CardLinhaMoovit(linha: LinhaOnibus, onFavoritar: (LinhaOnibus) -> Unit = {}) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier.size(32.dp).background(linha.corLinha, RoundedCornerShape(4.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Search, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+        }
+
+        Spacer(Modifier.width(12.dp))
+
+        Column(Modifier.weight(1f)) {
+            Text("${linha.numeroLinha} ${linha.nomeLinha}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Horário agendado • Apenas embarque", color = Color.Gray, fontSize = 12.sp)
+        }
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text("⏰ ${linha.tempoChegada}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(linha.proximoHorario, color = Color.Gray, fontSize = 12.sp)
+        }
+        IconButton(onClick = { onFavoritar(linha) }) {
+            Icon(imageVector = Icons.Default.Star, contentDescription = "Favoritar", tint = Color(0xFFFFD700))
+        }
+    }
+}
+
+@Composable
 fun CardEstacaoMoovit(estacao: EstacaoCompleta, onFavoritar: (LinhaOnibus) -> Unit = {}) {
     Column(Modifier.fillMaxWidth()) {
         Row(
@@ -231,24 +262,16 @@ fun CardEstacaoMoovit(estacao: EstacaoCompleta, onFavoritar: (LinhaOnibus) -> Un
             Spacer(Modifier.width(12.dp))
 
             Column(Modifier.weight(1f)) {
-                Text(estacao.nome, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text("${estacao.distancia} • ${estacao.tempoAPe}", color = Color.Gray, fontSize = 14.sp)
-            }
-
-            Button(
-                onClick = { if (estacao.linhas.isNotEmpty()) onFavoritar(estacao.linhas.first()) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2285FF)),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.size(width = 80.dp, height = 36.dp),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text("🚌", color = Color.White, fontSize = 16.sp)
+                Text(estacao.nomeEstacao, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text("${estacao.distanciaEstacao} • ${estacao.tempoAPe}", color = Color.Gray, fontSize = 14.sp)
             }
         }
 
-        estacao.linhas.forEach { CardLinhaMoovit(it) }
+        estacao.linhasEstacao.forEach { linha ->
+            CardLinhaMoovit(linha, onFavoritar)
+        }
 
-        if (estacao.linhas.size > 2) {
+        if (estacao.linhasEstacao.size > 2) {
             Text(
                 "Visualizar todas as linhas desta estação",
                 color = Color(0xFFFF5722),
@@ -256,37 +279,6 @@ fun CardEstacaoMoovit(estacao: EstacaoCompleta, onFavoritar: (LinhaOnibus) -> Un
                 modifier = Modifier.padding(8.dp)
             )
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
-    }
-}
-
-@Composable
-fun CardLinhaMoovit(linha: LinhaOnibus) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            Modifier.size(32.dp).background(linha.cor, RoundedCornerShape(4.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.Search, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-        }
-
-        Spacer(Modifier.width(12.dp))
-
-        Column(Modifier.weight(1f)) {
-            Text("${linha.numero} ${linha.nome}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text("Horário agendado • Apenas embarque", color = Color.Gray, fontSize = 12.sp)
-        }
-
-        Column(horizontalAlignment = Alignment.End) {
-            Text("⏰ ${linha.tempoChegada}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(linha.proximoHorario, color = Color.Gray, fontSize = 12.sp)
-        }
     }
 }
