@@ -13,6 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -77,16 +81,71 @@ fun TelaEstacoes(navController: NavHostController) {
         it.nome.contains(textoPesquisa, ignoreCase = true)
     }
 
+    val favoritosViewModel: FavoritosViewModel = viewModel()
+    val favoritosState by favoritosViewModel.favoritos.collectAsState()
+
+    var mostrarFavoritas by remember { mutableStateOf(false) }
+    var editarLinha by remember { mutableStateOf<LinhaTransporteBanco?>(null) }
+    var mostrarDialogEditar by remember { mutableStateOf(false) }
+
     Column(Modifier.fillMaxSize().background(Color.Black)) {
         HeaderEstacoes(textoPesquisa) { textoPesquisa = it }
-        AbasEstacoes()
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            items(estacoesFiltradas) { CardEstacaoMoovit(it) }
+        AbasEstacoes(onFavoritasClick = { mostrarFavoritas = !mostrarFavoritas })
+
+        if (mostrarFavoritas) {
+            LazyColumn(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(favoritosState) { linha ->
+                    Card(
+                        colors = CardDefaults.cardColors(Color(0xFF1C1C1C)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(linha.nome, color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Nº ${linha.numero} • ${linha.tipo}", color = Color.Gray)
+                            }
+
+                            IconButton(onClick = { editarLinha = linha; mostrarDialogEditar = true }) {
+                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar", tint = Color(0xFFFF9500))
+                            }
+                            IconButton(onClick = { favoritosViewModel.deletar(linha) }) {
+                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Deletar", tint = Color.Red)
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                items(estacoesFiltradas) { estacao ->
+                    CardEstacaoMoovit(estacao, onFavoritar = { linha ->
+                        // converte LinhaOnibus em LinhaTransporteBanco e insere, evitando duplicatas
+                        val nova = LinhaTransporteBanco(nome = "${linha.numero} ${linha.nome}", numero = linha.numero.toIntOrNull() ?: 0, tipo = "Ônibus", cor = "#FF5722")
+                        // checar duplicatas pelo número
+                        val existe = favoritosState.any { it.numero == nova.numero }
+                        if (!existe) favoritosViewModel.inserir(nova)
+                    })
+                }
+            }
+        }
+    }
+
+    if (mostrarDialogEditar && editarLinha != null) {
+        EditFavorito(linha = editarLinha!!, onDismiss = { mostrarDialogEditar = false; editarLinha = null }) { atualizado ->
+            favoritosViewModel.atualizar(atualizado)
+            mostrarDialogEditar = false
+            editarLinha = null
         }
     }
 }
@@ -132,7 +191,7 @@ fun HeaderEstacoes(textoPesquisa: String, onTextoMudou: (String) -> Unit) {
 }
 
 @Composable
-fun AbasEstacoes() {
+fun AbasEstacoes(onFavoritasClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -142,12 +201,19 @@ fun AbasEstacoes() {
         Text("Ao redor", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         Box(Modifier.width(60.dp).height(2.dp).background(Color(0xFFFF9500)))
         Spacer(Modifier.weight(1f))
-        Text("Favoritas", color = Color.Gray, fontSize = 16.sp)
+        Text(
+            "Favoritas",
+            color = Color.Gray,
+            fontSize = 16.sp,
+            modifier = Modifier
+                .clickable { onFavoritasClick() }
+                .padding(4.dp)
+        )
     }
 }
 
 @Composable
-fun CardEstacaoMoovit(estacao: EstacaoCompleta) {
+fun CardEstacaoMoovit(estacao: EstacaoCompleta, onFavoritar: (LinhaOnibus) -> Unit = {}) {
     Column(Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -170,7 +236,7 @@ fun CardEstacaoMoovit(estacao: EstacaoCompleta) {
             }
 
             Button(
-                onClick = { },
+                onClick = { if (estacao.linhas.isNotEmpty()) onFavoritar(estacao.linhas.first()) },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2285FF)),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.size(width = 80.dp, height = 36.dp),

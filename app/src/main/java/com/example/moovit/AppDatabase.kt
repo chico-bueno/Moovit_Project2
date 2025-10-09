@@ -5,10 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [LinhaTransporteBanco::class], version = 1)
+import androidx.room.TypeConverters
+
+@Database(entities = [LinhaTransporteBanco::class, HorarioBanco::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun moovitDAO(): MoovitDAO
+    abstract fun horariosDao(): HorariosDAO
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

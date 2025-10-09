@@ -14,4 +14,4 @@ data class FavoritosBanco(
     val casaFav: String,
     val trabalhoFav: String,
 
-)
+    )
