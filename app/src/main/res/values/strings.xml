@@ -12,4 +12,7 @@
     <string name="title_activity_favoritos_dao">FavoritosDAO</string>
     <string name="title_activity_favoritos_banco">FavoritosBanco</string>
     <string name="title_activity_horarios_dao">HorariosDAO</string>
+    <string name="title_activity_operacao_banco">OperacaoBanco</string>
+    <string name="title_activity_operacao_banco_linha">OperacaoBancoLinha</string>
+    <string name="title_activity_apitela_transporte">APITelaTransporte</string>
 </resources>

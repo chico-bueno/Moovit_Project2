@@ -10,7 +10,7 @@ data class LinhaTransporteBanco(
     val id: Int = 0,
 
     val nome: String,
-    val numero: Int,
+    val numero: String,
     val tipo: String,
     val cor: String,
 )

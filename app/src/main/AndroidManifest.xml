@@ -12,6 +12,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Moovit">
         <activity
+            android:name=".APITelaTransporte"
+            android:exported="false"
+            android:label="@string/title_activity_apitela_transporte"
+            android:theme="@style/Theme.Moovit" />
+        <activity
+            android:name=".OperacaoBancoLinha"
+            android:exported="false"
+            android:label="@string/title_activity_operacao_banco_linha"
+            android:theme="@style/Theme.Moovit" />
+        <activity
+            android:name=".OperacaoBanco"
+            android:exported="false"
+            android:label="@string/title_activity_operacao_banco"
+            android:theme="@style/Theme.Moovit" />
+        <activity
             android:name=".HorariosDAO"
             android:exported="false"
             android:label="@string/title_activity_horarios_dao"
