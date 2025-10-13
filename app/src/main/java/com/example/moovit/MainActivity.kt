@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MoovitTheme { // Adiciona o tema para garantir cores corretas
+            MoovitTheme {
                 Scaffold {
                      AppNavigation()
                 }

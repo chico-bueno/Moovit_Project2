@@ -252,7 +252,6 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
         )
     }
 
-    // confirmação de exclusão
     if (mostrarExcluir) {
         AlertDialog(
             onDismissRequest = { mostrarExcluir = false },
@@ -281,9 +280,7 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
     }
 }
 
-/**
- usado para criar ou editar um favorito.
- */
+
 @Composable
 fun DialogoFavorito(
     titulo: String,
@@ -331,7 +328,6 @@ fun DialogoFavorito(
     }
 }
 
-/** Campo de texto padrão usado nos diálogos */
 @Composable
 fun CampoTexto(label: String, valor: String, onChange: (String) -> Unit) {
     OutlinedTextField(
@@ -350,7 +346,6 @@ fun CampoTexto(label: String, valor: String, onChange: (String) -> Unit) {
     )
 }
 
-/** Cabeçalho com campo de pesquisa */
 @Composable
 fun HeaderEstacoes(texto: String, onMudou: (String) -> Unit) {
     Surface(color = Color(0xFF2D2D2D), modifier = Modifier.fillMaxWidth()) {
@@ -388,7 +383,6 @@ fun HeaderEstacoes(texto: String, onMudou: (String) -> Unit) {
         }
     }
 }
-/** Barra com as abas "Ao redor" e "Favoritas" */
 @Composable
 fun AbasEstacoes(selecionada: String, onSelecionar: (String) -> Unit) {
     Row(
@@ -477,7 +471,6 @@ fun CardLinhaMoovit(
     val scope = rememberCoroutineScope()
     var isFavorito by remember { mutableStateOf(false) }
 
-    // Verifica se a linha já é favorita
     LaunchedEffect(linha.numero, nomeEstacao) {
         isFavorito = gerenciador.verificarSeFavorito(nomeEstacao, linha.numero)
     }
@@ -515,7 +508,6 @@ fun CardLinhaMoovit(
             Text(linha.tempoChegada, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Text(linha.proximoHorario, color = Color.Gray, fontSize = 12.sp)
         }
-        // Botão de favoritar/desfavoritar
         IconButton(
             onClick = {
                 scope.launch {

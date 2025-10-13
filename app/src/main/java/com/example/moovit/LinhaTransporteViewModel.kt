@@ -9,23 +9,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// Um ViewModel simples para gerenciar as operações de LinhaTransporte
-// Extender AndroidViewModel permite acessar o Context via Application
+
 class LinhaTransporteViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Instância do DAO, obtida através do AppDatabase
     private val moovitDAO: MoovitDAO by lazy {
         AppDatabase.getDatabase(application).moovitDao()
     }
 
-    // Estado para manter a lista de linhas de transporte, observável pelo Compose
     private val _listaLinhas = MutableStateFlow<List<LinhaTransporteBanco>>(emptyList())
     val listaLinhas: StateFlow<List<LinhaTransporteBanco>> = _listaLinhas
 
     init {
-        // Carrega todas as linhas quando o ViewModel é criado
         carregarTodasLinhas()
-        // Adiciona algumas linhas de exemplo se o banco estiver vazio (para testar)
         adicionarLinhasIniciais()
     }
 
@@ -52,21 +47,21 @@ class LinhaTransporteViewModel(application: Application) : AndroidViewModel(appl
     fun adicionarLinha(nome: String, numero: String, tipo: String, cor: String) {
         viewModelScope.launch {
             inserirLinha(nome, numero, tipo, cor, moovitDAO)
-            carregarTodasLinhas() // Recarrega após a inserção
+            carregarTodasLinhas()
         }
     }
 
     fun atualizarLinhaExistente(linha: LinhaTransporteBanco) {
         viewModelScope.launch {
             atualizarLinha(linha, moovitDAO)
-            carregarTodasLinhas() // Recarrega após a atualização
+            carregarTodasLinhas()
         }
     }
 
     fun removerLinha(linha: LinhaTransporteBanco) {
         viewModelScope.launch {
             deletarLinha(linha, moovitDAO)
-            carregarTodasLinhas() // Recarrega após a exclusão
+            carregarTodasLinhas()
         }
     }
 }
