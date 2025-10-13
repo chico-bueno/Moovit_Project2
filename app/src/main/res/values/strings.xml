@@ -15,4 +15,6 @@
     <string name="title_activity_operacao_banco">OperacaoBanco</string>
     <string name="title_activity_operacao_banco_linha">OperacaoBancoLinha</string>
     <string name="title_activity_apitela_transporte">APITelaTransporte</string>
+    <string name="title_activity_estacoes2">Estacoes2</string>
+    <string name="title_activity_linha_transporte_view_model">LinhaTransporteViewModel</string>
 </resources>

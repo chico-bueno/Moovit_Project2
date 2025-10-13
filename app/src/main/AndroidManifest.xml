@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Moovit">
         <activity
+            android:name=".LinhaTransporteViewModel"
+            android:exported="false"
+            android:label="@string/title_activity_linha_transporte_view_model"
+            android:theme="@style/Theme.Moovit" />
+        <activity
             android:name=".APITelaTransporte"
             android:exported="false"
             android:label="@string/title_activity_apitela_transporte"
