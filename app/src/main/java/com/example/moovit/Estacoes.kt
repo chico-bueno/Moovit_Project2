@@ -225,7 +225,6 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
                 Text(favorito.nomeEstacao, color = Color.Gray, fontSize = 14.sp)
             }
 
-            // Botões de editar e excluir
             IconButton(onClick = { mostrarEditar = true }) {
                 Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Color(0xFFFF9500))
             }
@@ -235,7 +234,6 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
         }
     }
 
-    // edição
     if (mostrarEditar) {
         DialogoFavorito(
             titulo = "Editar Favorito",
