@@ -1,4 +1,4 @@
-package com.example.moovit
+package com.example.moovit.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

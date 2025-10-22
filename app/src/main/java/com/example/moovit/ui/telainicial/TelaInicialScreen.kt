@@ -1,9 +1,5 @@
-package com.example.moovit
+package com.example.moovit.ui.telainicial
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,16 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-
-class TelaInicial : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-
-        }
-    }
-}
 
 @Composable
 fun TelaPrincipal(navController: NavHostController) {
@@ -56,7 +42,7 @@ fun TelaPrincipal(navController: NavHostController) {
 }
 
 @Composable
-fun Pesquisa() {
+private fun Pesquisa() {
     Card(
         colors = CardDefaults.cardColors(Color(0xFF1C1C1C)),
         shape = RoundedCornerShape(12.dp),
@@ -85,14 +71,14 @@ fun Pesquisa() {
 }
 
 @Composable
-fun Frequentes(navController: NavHostController){
+private fun Frequentes(navController: NavHostController){
     Card(
         colors = CardDefaults.cardColors(Color(0xFF1C1C1C)),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate("Direçoes")
+                navController.navigate("Linhas")
             }
     ) {
         Column(
@@ -106,7 +92,7 @@ fun Frequentes(navController: NavHostController){
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Para ABO - Associação Brasileira de Odontologia - Secção Paraná",
+                "Para ABO - Associação Brasileira de Odontologia",
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -131,7 +117,7 @@ fun Frequentes(navController: NavHostController){
 }
 
 @Composable
-fun FavoritosCasa() {
+private fun FavoritosCasa() {
     Card(
         colors = CardDefaults.cardColors(Color(0xFF1C1C1C)),
         shape = RoundedCornerShape(12.dp),
@@ -161,7 +147,7 @@ fun FavoritosCasa() {
 }
 
 @Composable
-fun FavoritoTrabalho(){
+private fun FavoritoTrabalho(){
     Card(
         colors = CardDefaults.cardColors(Color(0xFF1C1C1C)),
         shape = RoundedCornerShape(12.dp),
@@ -190,7 +176,7 @@ fun FavoritoTrabalho(){
 }
 
 @Composable
-fun FavoritoDestino(navController: NavHostController) {
+private fun FavoritoDestino(navController: NavHostController) {
     Card(
         colors = CardDefaults.cardColors(Color(0xFF1C1C1C)),
         shape = RoundedCornerShape(12.dp),
@@ -204,14 +190,14 @@ fun FavoritoDestino(navController: NavHostController) {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "☸ ABO-Associação Brasileira de Odontologia - Secção Paraná",
+                text = "☸ ABO - Associação Brasileira de Odontologia",
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Rua Dias da Rocha Filho - Alto da XV, Curitiba - PR, Brasil",
+                text = "Rua Dias da Rocha Filho - Alto da XV, Curitiba - PR",
                 color = Color.Gray,
                 fontSize = 14.sp
             )
@@ -220,9 +206,9 @@ fun FavoritoDestino(navController: NavHostController) {
 }
 
 @Composable
-fun Rodape(modifier: Modifier, navController: NavHostController) {
+private fun Rodape(modifier: Modifier, navController: NavHostController) {
     Button(
-        onClick = { navController.navigate("Estaçoes") },
+        onClick = { navController.navigate("Estacoes") },
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

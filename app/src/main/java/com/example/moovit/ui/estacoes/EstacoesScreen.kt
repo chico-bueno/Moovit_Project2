@@ -1,9 +1,5 @@
-package com.example.moovit
+package com.example.moovit.ui.estacoes
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,117 +13,74 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.moovit.data.local.FavoritosBanco
 import kotlinx.coroutines.launch
-class Estacoes : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            TelaEstacoes(navController = rememberNavController())
-        }
-    }
-}
-data class LinhaOnibus(
-    val numero: String,
-    val nome: String,
-    val tempoChegada: String,
-    val proximoHorario: String,
-    val cor: Color = Color(0xFFFF5722)
-)
-data class EstacaoCompleta(
-    val nome: String,
-    val distancia: String,
-    val tempoAPe: String,
-    val linhas: List<LinhaOnibus>
-)
 
 @Composable
 fun TelaEstacoes(
     navController: NavHostController,
-    gerenciador: GerenciadorDeFavoritos = viewModel()
+    viewModel: EstacoesViewModel = viewModel(factory = EstacoesViewModel.Factory)
 ) {
-    val estacoes = remember {
-        listOf(
-            EstacaoCompleta(
-                "Praça Rui Barbosa", "1 min a pé", "1 min",
-                listOf(
-                    LinhaOnibus("561", "GUILHERMINA", "2 min", "37, 12:07"),
-                    LinhaOnibus("665", "VILA REX", "2 min", "42, 12:16"),
-                    LinhaOnibus("663", "VILA CUBAS", "2 min", "10, 19 min"),
-                    LinhaOnibus("603", "PINHEIRINHO / RUI BARBOSA", "2 min", "10, 19 min")
-                )
-            ),
-            EstacaoCompleta(
-                "Praça Rui Barbosa (360)", "2 min a pé", "2 min",
-                listOf(
-                    LinhaOnibus("360", "NOVENA", "3 min", "15, 12:25")
-                )
-            ),
-            EstacaoCompleta(
-                "Terminal Guadalupe", "5 min a pé", "5 min",
-                listOf(
-                    LinhaOnibus("380", "DETRAN", "8 min", "20, 12:30"),
-                    LinhaOnibus("140", "VILA ESPERANÇA", "12 min", "25, 12:35")
-                )
-            )
-        )
-    }
-
-    // Estados locais da tela
-    var textoPesquisa by remember { mutableStateOf("") }
-    var abaSelecionada by remember { mutableStateOf("ao_redor") }
+    // O import 'getValue' permite que a linha abaixo funcione
+    val uiState by viewModel.uiState.collectAsState()
     var mostrarDialogoCriar by remember { mutableStateOf(false) }
 
-    val favoritos by gerenciador.listaFavoritos.collectAsState()
-
-    val estacoesFiltradas = estacoes.filter {
-        it.nome.contains(textoPesquisa, ignoreCase = true)
-    }
     Column(
         Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        HeaderEstacoes(textoPesquisa) { textoPesquisa = it }
-        AbasEstacoes(abaSelecionada) { abaSelecionada = it }
-        if (abaSelecionada == "favoritas") {
-            TelaFavoritos(favoritos, gerenciador) { mostrarDialogoCriar = true }
+        HeaderEstacoes(uiState.textoPesquisa) { viewModel.onTextoPesquisaChanged(it) }
+        AbasEstacoes(uiState.abaSelecionada) { viewModel.onAbaSelecionada(it) }
+
+        if (uiState.abaSelecionada == "favoritas") {
+            TelaFavoritos(
+                favoritos = uiState.favoritos,
+                viewModel = viewModel,
+                onAdd = { mostrarDialogoCriar = true }
+            )
         } else {
             LazyColumn(
                 Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(estacoesFiltradas) {
-                    CardEstacaoMoovit(it, gerenciador)
+                items(uiState.estacoesFiltradas) { estacao ->
+                    CardEstacaoMoovit(
+                        estacao = estacao,
+                        favoritos = uiState.favoritos,
+                        viewModel = viewModel
+                    )
                 }
             }
         }
     }
+
     if (mostrarDialogoCriar) {
         DialogoFavorito(
             titulo = "Adicionar Favorito",
             onDismiss = { mostrarDialogoCriar = false },
             onSalvar = { est, num, nom ->
-                gerenciador.adicionarFavorito(est, num, nom)
+                viewModel.adicionarFavorito(est, num, nom)
                 mostrarDialogoCriar = false
             }
         )
     }
 }
+
 @Composable
-fun TelaFavoritos(
+private fun TelaFavoritos(
     favoritos: List<FavoritosBanco>,
-    gerenciador: GerenciadorDeFavoritos,
+    viewModel: EstacoesViewModel,
     onAdd: () -> Unit
 ) {
     Column(
@@ -175,15 +128,15 @@ fun TelaFavoritos(
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(favoritos) { favorito ->
-                    CardFavorito(favorito, gerenciador)
+                items(favoritos, key = { it.idFav }) { favorito ->
+                    CardFavorito(favorito, viewModel)
                 }
             }
         }
     }
 }
 @Composable
-fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) {
+private fun CardFavorito(favorito: FavoritosBanco, viewModel: EstacoesViewModel) {
     var mostrarEditar by remember { mutableStateOf(false) }
     var mostrarExcluir by remember { mutableStateOf(false) }
 
@@ -240,7 +193,7 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
             favoritoInicial = favorito,
             onDismiss = { mostrarEditar = false },
             onSalvar = { est, num, nom ->
-                gerenciador.editarFavorito(
+                viewModel.editarFavorito(
                     favorito.copy(
                         nomeEstacao = est,
                         numeroLinha = num,
@@ -260,7 +213,7 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
             confirmButton = {
                 Button(
                     onClick = {
-                        gerenciador.removerFavorito(favorito)
+                        viewModel.removerFavorito(favorito)
                         mostrarExcluir = false
                     },
                     colors = ButtonDefaults.buttonColors(Color(0xFFFF5252))
@@ -282,7 +235,7 @@ fun CardFavorito(favorito: FavoritosBanco, gerenciador: GerenciadorDeFavoritos) 
 
 
 @Composable
-fun DialogoFavorito(
+private fun DialogoFavorito(
     titulo: String,
     favoritoInicial: FavoritosBanco? = null,
     onDismiss: () -> Unit,
@@ -293,43 +246,39 @@ fun DialogoFavorito(
     var nome by remember { mutableStateOf(favoritoInicial?.nomeLinha ?: "") }
     val valido = estacao.isNotBlank() && numero.isNotBlank() && nome.isNotBlank()
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            colors = CardDefaults.cardColors(Color(0xFF2D2D2D)),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(Modifier.padding(24.dp)) {
-                Text(titulo, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF2D2D2D),
+        title = { Text(titulo, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
                 Spacer(Modifier.height(20.dp))
-
                 CampoTexto("Nome da Estação", estacao) { estacao = it }
                 Spacer(Modifier.height(12.dp))
                 CampoTexto("Número da Linha", numero) { numero = it }
                 Spacer(Modifier.height(12.dp))
                 CampoTexto("Nome da Linha", nome) { nome = it }
-
-                Spacer(Modifier.height(24.dp))
-
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancelar", color = Color.Gray)
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Button(
-                        onClick = { if (valido) onSalvar(estacao, numero, nome) },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF9500)),
-                        enabled = valido
-                    ) {
-                        Text("Salvar", color = Color.White)
-                    }
-                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (valido) onSalvar(estacao, numero, nome) },
+                colors = ButtonDefaults.buttonColors(Color(0xFFFF9500)),
+                enabled = valido
+            ) {
+                Text("Salvar", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = Color.Gray)
             }
         }
-    }
+    )
 }
 
 @Composable
-fun CampoTexto(label: String, valor: String, onChange: (String) -> Unit) {
+private fun CampoTexto(label: String, valor: String, onChange: (String) -> Unit) {
     OutlinedTextField(
         value = valor,
         onValueChange = onChange,
@@ -347,7 +296,7 @@ fun CampoTexto(label: String, valor: String, onChange: (String) -> Unit) {
 }
 
 @Composable
-fun HeaderEstacoes(texto: String, onMudou: (String) -> Unit) {
+private fun HeaderEstacoes(texto: String, onMudou: (String) -> Unit) {
     Surface(color = Color(0xFF2D2D2D), modifier = Modifier.fillMaxWidth()) {
         Row(
             Modifier
@@ -383,8 +332,9 @@ fun HeaderEstacoes(texto: String, onMudou: (String) -> Unit) {
         }
     }
 }
+
 @Composable
-fun AbasEstacoes(selecionada: String, onSelecionar: (String) -> Unit) {
+private fun AbasEstacoes(selecionada: String, onSelecionar: (String) -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -396,14 +346,15 @@ fun AbasEstacoes(selecionada: String, onSelecionar: (String) -> Unit) {
         AbaItem("Favoritas", "favoritas", selecionada, onSelecionar)
     }
 }
-/** Aba individual */
+
 @Composable
-fun AbaItem(texto: String, id: String, selecionada: String, onSelecionar: (String) -> Unit) {
+private fun AbaItem(texto: String, id: String, selecionada: String, onSelecionar: (String) -> Unit) {
     val ativa = selecionada == id
     Column(
-        Modifier
+        modifier = Modifier
             .clickable { onSelecionar(id) }
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             texto,
@@ -423,8 +374,13 @@ fun AbaItem(texto: String, id: String, selecionada: String, onSelecionar: (Strin
         )
     }
 }
+
 @Composable
-fun CardEstacaoMoovit(estacao: EstacaoCompleta, gerenciador: GerenciadorDeFavoritos) {
+private fun CardEstacaoMoovit(
+    estacao: EstacaoCompleta,
+    favoritos: List<FavoritosBanco>,
+    viewModel: EstacoesViewModel
+) {
     Column(Modifier.fillMaxWidth()) {
         Row(
             Modifier
@@ -446,34 +402,24 @@ fun CardEstacaoMoovit(estacao: EstacaoCompleta, gerenciador: GerenciadorDeFavori
                 Text("${estacao.distancia} • ${estacao.tempoAPe}", color = Color.Gray, fontSize = 14.sp)
             }
         }
-        estacao.linhas.forEach {
-            CardLinhaMoovit(it, estacao.nome, gerenciador)
-        }
-        if (estacao.linhas.size > 2) {
-            Text(
-                "Visualizar todas as linhas desta estação",
-                color = Color(0xFFFF5722),
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable { }
-            )
+        estacao.linhas.forEach { linha ->
+            val isFavorito = favoritos.any { it.nomeEstacao == estacao.nome && it.numeroLinha == linha.numero }
+            CardLinhaMoovit(linha, estacao.nome, isFavorito, viewModel)
         }
         Spacer(Modifier.height(8.dp))
+        // CORREÇÃO: 'Divider' foi trocado por 'HorizontalDivider'
+        HorizontalDivider(color = Color(0xFF2D2D2D))
     }
 }
+
 @Composable
-fun CardLinhaMoovit(
+private fun CardLinhaMoovit(
     linha: LinhaOnibus,
     nomeEstacao: String,
-    gerenciador: GerenciadorDeFavoritos
+    isFavorito: Boolean,
+    viewModel: EstacoesViewModel
 ) {
     val scope = rememberCoroutineScope()
-    var isFavorito by remember { mutableStateOf(false) }
-
-    LaunchedEffect(linha.numero, nomeEstacao) {
-        isFavorito = gerenciador.verificarSeFavorito(nomeEstacao, linha.numero)
-    }
     Row(
         Modifier
             .fillMaxWidth()
@@ -502,7 +448,7 @@ fun CardLinhaMoovit(
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
-            Text("Horário agendado para Apenas embarque", color = Color.Gray, fontSize = 12.sp)
+            Text("Horário agendado", color = Color.Gray, fontSize = 12.sp)
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(linha.tempoChegada, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -511,17 +457,17 @@ fun CardLinhaMoovit(
         IconButton(
             onClick = {
                 scope.launch {
-                    if (isFavorito)
-                        gerenciador.removerFavoritoPorLinhaEEstacao(nomeEstacao, linha.numero)
-                    else
-                        gerenciador.adicionarFavorito(nomeEstacao, linha.numero, linha.nome)
-                    isFavorito = !isFavorito
+                    if (isFavorito) {
+                        viewModel.removerFavoritoPorLinhaEEstacao(nomeEstacao, linha.numero)
+                    } else {
+                        viewModel.adicionarFavorito(nomeEstacao, linha.numero, linha.nome)
+                    }
                 }
             }
         ) {
             Icon(
                 if (isFavorito) Icons.Filled.Star else Icons.Outlined.Star,
-                contentDescription = if (isFavorito) "Favorito" else "Não favorito",
+                contentDescription = if (isFavorito) "Remover Favorito" else "Adicionar Favorito",
                 tint = if (isFavorito) Color(0xFFFFD700) else Color.Gray
             )
         }

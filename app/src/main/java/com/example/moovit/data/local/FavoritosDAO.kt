@@ -1,11 +1,13 @@
-package com.example.moovit
+package com.example.moovit.data.local
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.example.moovit.data.local.FavoritosBanco
 import kotlinx.coroutines.flow.Flow
+
 @Dao
 interface FavoritosDAO {
     @Insert

@@ -1,9 +1,5 @@
-package com.example.moovit
+package com.example.moovit.ui.linhas
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,10 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,41 +18,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-
-class Direcoes : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            TelaLinhas(navController = rememberNavController())
-        }
-    }
-}
+import com.example.moovit.data.local.LinhaTransporteBanco
+import com.example.moovit.util.corPorNome
 
 @Composable
 fun TelaLinhas(
     navController: NavHostController,
-    linhaVM: LinhaTransporteViewModel = viewModel()
+    linhaVM: LinhasViewModel = viewModel(factory = LinhasViewModel.Factory)
 ) {
-    val listaLinhas by linhaVM.listaLinhas.collectAsState()
+    val uiState by linhaVM.uiState.collectAsState()
     var mostrarDialogoCriar by remember { mutableStateOf(false) }
-    var textoPesquisa by remember { mutableStateOf("") }
-
-    val linhasFiltradas = listaLinhas.filter {
-        it.nome.contains(textoPesquisa, ignoreCase = true) ||
-                it.numero.contains(textoPesquisa, ignoreCase = true) ||
-                it.tipo.contains(textoPesquisa, ignoreCase = true)
-    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        HeaderDirecoes(textoPesquisa) { textoPesquisa = it }
+        HeaderLinhas(uiState.textoPesquisa) { linhaVM.onTextoPesquisaChanged(it) }
 
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -85,11 +61,11 @@ fun TelaLinhas(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (linhasFiltradas.isEmpty()) {
+            if (uiState.linhasFiltradas.isEmpty()) {
                 Text("Nenhuma linha encontrada.", color = Color.Gray)
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(linhasFiltradas) { linha ->
+                    items(uiState.linhasFiltradas, key = { it.id }) { linha ->
                         CardLinhaTransporte(linha, linhaVM)
                     }
                 }
@@ -102,17 +78,16 @@ fun TelaLinhas(
             titulo = "Adicionar Nova Linha",
             onDismiss = { mostrarDialogoCriar = false },
             onSalvar = { nome, numero, tipo, corNome ->
-                val corConvertida = corPorNome(corNome)
-                linhaVM.adicionarLinha(nome, numero, tipo, corNome) // mantém nome salvo
+                linhaVM.adicionarLinha(nome, numero, tipo, corNome)
                 mostrarDialogoCriar = false
             }
         )
     }
 }
 
-// Cabeçalho
+
 @Composable
-fun HeaderDirecoes(texto: String, onMudou: (String) -> Unit) {
+private fun HeaderLinhas(texto: String, onMudou: (String) -> Unit) {
     Surface(color = Color(0xFF2D2D2D), modifier = Modifier.fillMaxWidth()) {
         Row(
             Modifier
@@ -150,7 +125,7 @@ fun HeaderDirecoes(texto: String, onMudou: (String) -> Unit) {
 }
 
 @Composable
-fun CardLinhaTransporte(linha: LinhaTransporteBanco, linhaVM: LinhaTransporteViewModel) {
+private fun CardLinhaTransporte(linha: LinhaTransporteBanco, linhaVM: LinhasViewModel) {
     var mostrarEditar by remember { mutableStateOf(false) }
     var mostrarExcluir by remember { mutableStateOf(false) }
 
@@ -187,11 +162,6 @@ fun CardLinhaTransporte(linha: LinhaTransporteBanco, linhaVM: LinhaTransporteVie
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
-                Text(
-                    text = "ID: ${linha.id}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
             }
 
             IconButton(onClick = { mostrarEditar = true }) {
@@ -224,7 +194,7 @@ fun CardLinhaTransporte(linha: LinhaTransporteBanco, linhaVM: LinhaTransporteVie
                     tipo = tipo,
                     cor = corNome
                 )
-                linhaVM.atualizarLinhaExistente(linhaAtualizada)
+                linhaVM.atualizarLinha(linhaAtualizada)
                 mostrarEditar = false
             }
         )
@@ -251,15 +221,13 @@ fun CardLinhaTransporte(linha: LinhaTransporteBanco, linhaVM: LinhaTransporteVie
                     Text("Cancelar", color = Color.Gray)
                 }
             },
-            containerColor = Color(0xFF2D2D2D),
-            titleContentColor = Color.White,
-            textContentColor = Color.White
+            containerColor = Color(0xFF2D2D2D)
         )
     }
 }
 
 @Composable
-fun DialogoLinhaTransporte(
+private fun DialogoLinhaTransporte(
     titulo: String,
     linhaInicial: LinhaTransporteBanco? = null,
     onDismiss: () -> Unit,
@@ -272,15 +240,13 @@ fun DialogoLinhaTransporte(
 
     val valido = nome.isNotBlank() && numero.isNotBlank() && tipo.isNotBlank() && cor.isNotBlank()
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            colors = CardDefaults.cardColors(Color(0xFF2D2D2D)),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(Modifier.padding(24.dp)) {
-                Text(titulo, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF2D2D2D),
+        title = { Text(titulo, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
                 Spacer(Modifier.height(20.dp))
-
                 CampoTextoLinha("Nome da Linha", nome) { nome = it }
                 Spacer(Modifier.height(12.dp))
                 CampoTextoLinha("Número", numero) { numero = it }
@@ -288,29 +254,27 @@ fun DialogoLinhaTransporte(
                 CampoTextoLinha("Tipo (Ex: Ligeirinho/Interbairros)", tipo) { tipo = it }
                 Spacer(Modifier.height(12.dp))
                 CampoTextoLinha("Cor (ex: vermelho, azul, verde...)", cor) { cor = it }
-
-                Spacer(Modifier.height(24.dp))
-
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancelar", color = Color.Gray)
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Button(
-                        onClick = { if (valido) onSalvar(nome, numero, tipo, cor) },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF9500)),
-                        enabled = valido
-                    ) {
-                        Text("Salvar", color = Color.White)
-                    }
-                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (valido) onSalvar(nome, numero, tipo, cor) },
+                colors = ButtonDefaults.buttonColors(Color(0xFFFF9500)),
+                enabled = valido
+            ) {
+                Text("Salvar", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = Color.Gray)
             }
         }
-    }
+    )
 }
 
 @Composable
-fun CampoTextoLinha(label: String, valor: String, onChange: (String) -> Unit) {
+private fun CampoTextoLinha(label: String, valor: String, onChange: (String) -> Unit) {
     OutlinedTextField(
         value = valor,
         onValueChange = onChange,
@@ -325,21 +289,4 @@ fun CampoTextoLinha(label: String, valor: String, onChange: (String) -> Unit) {
         ),
         modifier = Modifier.fillMaxWidth()
     )
-}
-
-// Conversão hex para nome de cor
-fun corPorNome(nome: String): Color {
-    return when (nome.lowercase()) {
-        "vermelho" -> Color(0xFFFF3B30)
-        "azul" -> Color(0xFF007AFF)
-        "verde" -> Color(0xFF34C759)
-        "amarelo" -> Color(0xFFFFD60A)
-        "laranja" -> Color(0xFFFF9500)
-        "roxo" -> Color(0xFFAF52DE)
-        "rosa" -> Color(0xFFFF2D55)
-        "cinza" -> Color(0xFF8E8E93)
-        "preto" -> Color.Black
-        "branco" -> Color.White
-        else -> Color(0xFFFF9500) // cor padrão
-    }
 }
