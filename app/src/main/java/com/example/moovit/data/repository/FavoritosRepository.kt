@@ -6,8 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 class FavoritosRepository(private val favoritosDAO: FavoritosDAO) {
 
-    // A função que estava faltando ou incorreta.
-    // Ela busca os dados do DAO e os expõe como um Flow.
+
     fun getFavoritos(): Flow<List<FavoritosBanco>> = favoritosDAO.buscarTodos()
 
     suspend fun inserir(favorito: FavoritosBanco) {

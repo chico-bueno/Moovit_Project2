@@ -29,7 +29,6 @@ fun TelaEstacoes(
     navController: NavHostController,
     viewModel: EstacoesViewModel = viewModel(factory = EstacoesViewModel.Factory)
 ) {
-    // O import 'getValue' permite que a linha abaixo funcione
     val uiState by viewModel.uiState.collectAsState()
     var mostrarDialogoCriar by remember { mutableStateOf(false) }
 
@@ -407,7 +406,6 @@ private fun CardEstacaoMoovit(
             CardLinhaMoovit(linha, estacao.nome, isFavorito, viewModel)
         }
         Spacer(Modifier.height(8.dp))
-        // CORREÇÃO: 'Divider' foi trocado por 'HorizontalDivider'
         HorizontalDivider(color = Color(0xFF2D2D2D))
     }
 }

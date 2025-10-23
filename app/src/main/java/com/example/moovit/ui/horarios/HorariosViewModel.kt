@@ -11,10 +11,7 @@ import com.example.moovit.data.repository.HorariosRepository // Importa o novo r
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-// As data classes RotaHorario e HorariosUiState foram movidas para HorariosModels.kt
-
 class HorariosViewModel(
-    // 1. Recebe o Repositório
     private val repository: HorariosRepository
 ) : ViewModel() {
 
@@ -22,7 +19,6 @@ class HorariosViewModel(
     val uiState: StateFlow<HorariosUiState> = _uiState.asStateFlow()
 
     init {
-        // 2. Coleta o Flow do repositório
         viewModelScope.launch {
             repository.getRotas().collect { rotas ->
                 _uiState.update { it.copy(todasAsRotas = rotas) }
@@ -34,7 +30,6 @@ class HorariosViewModel(
         _uiState.update { it.copy(textoPesquisa = novoTexto) }
     }
 
-    // 3. Adiciona a Factory para injetar o Repositório
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

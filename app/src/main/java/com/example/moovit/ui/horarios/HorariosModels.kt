@@ -3,7 +3,6 @@ package com.example.moovit.ui.horarios
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.Flow
 
-// A classe de modelo de dados
 data class RotaHorario(
     val id: Int,
     val tempo: String,
@@ -15,7 +14,6 @@ data class RotaHorario(
     val iconeCor: Color = Color(0xFFFF5722)
 )
 
-// A classe de estado da UI
 data class HorariosUiState(
     val todasAsRotas: List<RotaHorario> = emptyList(),
     val textoPesquisa: String = ""

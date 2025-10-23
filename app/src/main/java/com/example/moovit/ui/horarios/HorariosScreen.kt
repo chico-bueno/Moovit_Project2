@@ -25,7 +25,6 @@ import androidx.navigation.NavHostController
 @Composable
 fun TelaHorarios(
     navController: NavHostController,
-    // ***** ESTA É A ÚNICA LINHA QUE MUDA NO SEU ARQUIVO *****
     viewModel: HorariosViewModel = viewModel(factory = HorariosViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
